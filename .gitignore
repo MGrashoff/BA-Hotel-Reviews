@@ -1,0 +1,7 @@
+.idea
+model-outputs
+outputs
+venv
+wandb
+data
+runs
