@@ -2,10 +2,10 @@ import pandas as pd
 from simpletransformers.classification import ClassificationModel
 import time
 
-def train_model(model_type, model_name):
-    print('Starting run:', model_type, model_name)
+def train_model(model_type, model_name, amount):
+    print('Starting run:', model_type, model_name, amount)
 
-    train_df = pd.read_csv("data/imdb/train.csv", header=None)
+    train_df = pd.read_csv(f'data/imdb/train_{amount}.csv', header=None)
     train_df["text"] = train_df.iloc[:, 0]
     train_df = train_df.drop(train_df.columns[[0]], axis=1)
     train_df.columns = ["labels", "text"]
@@ -23,7 +23,7 @@ def train_model(model_type, model_name):
 
     t0 = time.time()
     train_args = {
-        'output_dir': f'model-outputs/imdb/{model_type}-{model_name}-outputs-2',
+        'output_dir': f'model-outputs/imdb/new/{model_type}-{model_name}-outputs',
         'max_seq_length': 256,
         'num_train_epochs': 5,
         'train_batch_size': 16,
@@ -32,7 +32,7 @@ def train_model(model_type, model_name):
         'learning_rate': 5e-5,
         'save_steps': 50000,
         'evaluate_during_training': True,
-        'evaluate_during_training_steps': 1000,
+        'evaluate_during_training_steps': 40000,
         'reprocess_input_data': True,
         'save_model_every_epoch': False,
         'overwrite_output_dir': True,
@@ -52,11 +52,9 @@ def train_model(model_type, model_name):
     print('--------------------')
 
 if __name__ == '__main__':
-    # model_types = ["bert", "distilbert", "roberta", "albert", "xlnet"]
-    model_types = ["albert", "xlnet"]
-    # model_names = ["bert-base-cased", "distilbert-base-cased", "roberta-base", "albert-base-v2", "xlnet-base-cased"]
-    model_names = ["albert-base-v2", "xlnet-base-cased"]
+    model_types = ["bert", "distilbert", "roberta", "albert", "xlnet"]
+    model_names = ["bert-base-cased", "distilbert-base-cased", "roberta-base", "albert-base-v2", "xlnet-base-cased"]
 
     for i in range(len(model_types)):
-        # for j in ["5000", "10000"]:
-        train_model(model_types[i], model_names[i])
+        for j in ["5000", "10000"]:
+            train_model(model_types[i], model_names[i], j)

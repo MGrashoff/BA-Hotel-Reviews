@@ -3,15 +3,17 @@ import numpy as np
 from simpletransformers.classification import ClassificationModel
 import time
 
-
+# Training a specified model
 def train_model(model_type, model_name):
     print('Starting run:', model_type, model_name)
 
-    train_df = pd.read_csv("data/reviews/new_training.csv", header=None)
+    train_df = pd.read_csv("data/reviews/train.csv", header=None)
     train_df.columns = ["text", "labels"]
 
-    eval_df = pd.read_csv("data/reviews/new_test.csv", header=None)
+    eval_df = pd.read_csv("data/reviews/test.csv", header=None)
     eval_df.columns = ["text", "labels"]
+
+    # print(eval_df.iloc[0])
 
     t0 = time.time()
     train_args = {
@@ -22,7 +24,7 @@ def train_model(model_type, model_name):
         'eval_batch_size': 32,
         'learning_rate': 5e-5,
         'evaluate_during_training': True,
-        'evaluate_during_training_steps': 5000,
+        'evaluate_during_training_steps': 50000,
         'save_model_every_epoch': False,
         'overwrite_output_dir': True,
         'no_cache': True,
@@ -32,8 +34,6 @@ def train_model(model_type, model_name):
         'regression': True,
         'best_model_dir': f'outputs/{model_type}/best_model'
     }
-
-    # 'wandb_project': 'hotel-reviews',
 
     model = ClassificationModel(model_type, model_name, num_labels=1, args=train_args)
     model.train_model(train_df, eval_df=eval_df)
@@ -49,6 +49,7 @@ def train_model(model_type, model_name):
     print('Raw Outputs:', raw_outputs)
 
 
+# Compute the evaluation parameter based on the outputs from a balanced dataset
 def get_evaluation_parameter(model):
     eval_df = pd.read_csv("data/reviews/new_test.csv", header=None)
     eval_df.columns = ["text", "labels"]
@@ -85,34 +86,22 @@ def get_evaluation_parameter(model):
     pd.DataFrame(plots).to_csv("plots.csv", index=None)
 
 
-def evaluate_rating(comment, rating, model_type, model_path):
-    max_diff = 1.5
-    model = ClassificationModel(model_type, model_path)
-    predictions, raw_outputs = model.predict([comment])
-
-    if abs(predictions - rating) > max_diff:
-        print('Prediction:', predictions)
-        print('Rating:', rating)
-        print(comment)
-
-
 def use_model(model_type, model_path):
     model = ClassificationModel(model_type, model_path)
 
-    predictions, raw_outputs = model.predict(
-        ["Good hotel, nothing great but is enough to have a decent "
-         "experience and fun with the family"])
+    comments = ["Good hotel, nothing great but is enough to have a decent experience and fun with the family",
+                "Horrible experience, the staff was rude and the food terrible",
+                "I truly loved it! Great staff and delicious food. 5/5",
+                "nice boutique hotel stayed 5 nights, rooms nice clean place pretty, location good in central singapore",
+                "Wonderful place perfectly located. Just opened a month ago. Very helpful staff, reasonable rates, breakfast included. The rooms are nice and completely clean.",
+                "The pricing was fine, good location. Food could be better."]
+
+    predictions, raw_outputs = model.predict(comments)
     print('Prediction:', predictions)
     print('Raw Outputs:', raw_outputs)
 
-    predictions, raw_outputs = model.predict(["Horrible experience, the staff was rude and the food terrible"])
-    print('Prediction:', predictions)
-    print('Raw Outputs:', raw_outputs)
 
-    predictions, raw_outputs = model.predict(["I truly loved it! Great staff and delicious food. 5/5"])
-    print('Prediction:', predictions)
-    print('Raw Outputs:', raw_outputs)
-
+# Collecting balanced training data from an unbalanced set
 def collectTrainingData():
     df = pd.read_csv("data/reviews/test.csv", header=None)
     df.columns = ["text", "labels"]
@@ -157,9 +146,9 @@ def collectTrainingData():
     pd.DataFrame(visualisation).to_csv("data/reviews/vis_test.csv", index=None)
 
 if __name__ == '__main__':
+    train_model("albert", "albert-base-v2")
     # collectTrainingData()
-    # train_model("albert", "albert-base-v2")
-    get_evaluation_parameter('albert')
+    # get_evaluation_parameter('albert')
     # use_model("albert", "outputs/albert/best_model")
 
     # eval_df = pd.read_csv("data/reviews/test.csv", header=None)

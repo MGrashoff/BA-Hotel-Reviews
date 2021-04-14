@@ -2,6 +2,7 @@ import pandas as pd
 from simpletransformers.classification import ClassificationModel
 import time
 
+# Collecting balanced training data from an unbalanced set
 def prepare_data():
     df = pd.read_csv("data/sarcasm/train.csv", header=None)
     df.columns = ['label', 'comment', 'author', 'subreddit', 'score', 'ups', 'downs', 'date', 'created_utc', 'parent_comment']
@@ -150,5 +151,5 @@ if __name__ == '__main__':
     model_names = ["bert-base-cased", "distilbert-base-cased", "roberta-base", "albert-base-v2", "xlnet-base-cased"]
 
     for i in range(len(model_types)):
-        # for j in ["1000", "5000", "10000", "100000"]:
-        train_model(model_types[i], model_names[i], "1000")
+        for j in ["1000", "5000", "10000", "100000"]:
+            train_model(model_types[i], model_names[i], j)
